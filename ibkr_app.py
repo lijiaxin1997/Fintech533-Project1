@@ -5,7 +5,7 @@ import pickle
 from helper_functions import *
 
 # Define your variables here ###########################################################################################
-sampling_rate = 1 # How often, in seconds, to check for inputs from Dash?
+sampling_rate = 1  # How often, in seconds, to check for inputs from Dash?
 # For TWS Paper account, default port is 7497
 # For IBG Paper account, default port is 4002
 port = 7497
@@ -14,7 +14,7 @@ master_client_id = 10645
 # choose your dedicated id just for orders. I picked 1111.
 orders_client_id = 1111
 # account number: you'll need to fill in yourself. The below is one of my paper trader account numbers.
-acc_number = 'DU1267860'
+acc_number = 'ljxin8611'
 ########################################################################################################################
 
 # Run your helper function to clear out any io files left over from old runs
@@ -26,10 +26,10 @@ ib = IB()
 ib.connect(host='127.0.0.1', port=port, clientId=master_client_id)
 # Make sure you're connected -- stay in this while loop until ib.isConnected() is True.
 while not ib.isConnected():
-    sleep(1)
+    sleep(.1)
 # If connected, script proceeds and prints a success message.
 if ib.isConnected():
-    print('Connection successful')
+    print('Connected successfully')
 
 # Main while loop of the app. Stay in this loop until the app is stopped by the user.
 while True:

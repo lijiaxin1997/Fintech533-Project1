@@ -52,7 +52,7 @@ app.layout = html.Div([
     # Div to confirm what trade was made
     html.Div(id='output-trade'),
     # Radio items to select buy or sell
-    dcc.RadioItems(
+    dcc.RadioItems(id='action',
         options=[
             {'label': 'BUY', 'value': 'buy'},
             {'label': 'SELL', 'value': 'sell'},
@@ -60,9 +60,9 @@ app.layout = html.Div([
         value='buy'
     ),
     # Text input for the currency pair to be traded
-    dcc.Input(id='currency-traded', type='text'),
+    dcc.Input(id='trade_currency', type='text'),
     # Numeric input for the trade amount
-    dcc.Input(id='trade-amount', type='number'),
+    dcc.Input(id='trade_amt', type='number'),
     # Submit button for the trade
     html.Button('Trade', id = 'trade-button', n_clicks = 0),
 
@@ -84,12 +84,8 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     file_to_write_to.write(value)
     file_to_write_to.close()
     # Wait until ibkr_app runs the query and saves the historical prices csv
-    while True:
-        if 'currency_pair_history.csv' in listdir():
-            sleep(1)
-            break
-        else:
-            continue
+    while 'currency_pair_history.csv' not in listdir():
+        sleep(0.1)
     # Read in the historical prices
     df = pd.read_csv('currency_pair_history.csv')
 
@@ -99,16 +95,16 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     fig = go.Figure(
         data=[
             go.Candlestick(
-                x=df['Date'],
-                open=df['Open'],
-                high=df['High'],
-                low=df['Low'],
-                close=df['Close']
+                x=df['date'],
+                open=df['open'],
+                high=df['high'],
+                low=df['low'],
+                close=df['close']
             )
         ]
     )
     # Give the candlestick figure a title
-    fig.update_layout(title='Currency Pair Data')
+    fig.update_layout(title=value)
 
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
     return ('Submitted query for ' + value), fig
@@ -116,15 +112,17 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
 # Callback for what to do when trade-button is pressed
 @app.callback(
      Output('output-trade', 'children'),
-    [Input('trade_submit', 'n_clicks')],
-    [State('currency-traded', 'value')],
+    [Input('trade-button', 'n_clicks')],
+    [State('action', 'value'),
+     State('trade_currency', 'value'),
+     State('trade_amt', 'value')],
     # We DON'T want to start executing trades just because n_clicks was initialized to 0!!!
     prevent_initial_call=True
 )
 def trade(n_clicks, action, trade_currency, trade_amt): # Still don't use n_clicks, but we need the dependency
 
     # Make the message that we want to send back to trade-output
-    msg = action + ': ' + trade_currency + ', ' + trade_amt
+    msg = action + ': ' + trade_currency + ', ' + str(trade_amt)
     # Make our trade_order object -- a DICTIONARY.
     trade_order = {
         "action": action,
